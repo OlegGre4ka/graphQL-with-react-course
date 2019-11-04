@@ -1,6 +1,7 @@
 const graphql = require('graphql');
-const _ = require('lodash');
-// const axios = require('axios');
+// const _ = require('lodash');
+const axios = require('axios');
+
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -9,14 +10,15 @@ const {
   // GraphQLList,
   // GraphQLNonNull
 } = graphql;
+// --------------------------Hard core data--------------------------------------------
+// const users = [
+//   { id: '23', firstName: 'Rusya', age: 31 },
+//   { id: '11', firstName: 'Oleg', age: 43 },
+//   { id: '2', firstName: 'Tom', age: 65 }
+// ]
+// ---------------------------------------------------------------------
 
-const users = [
-  { id: '23', firstName: 'Rusya', age: 31 },
-  { id: '11', firstName: 'Oleg', age: 43 },
-  { id: '2', firstName: 'Tom', age: 65 }
 
-
-]
 // const CompanyType = new GraphQLObjectType({
 //   name: 'Company',
 //   fields: () => ({
@@ -56,6 +58,17 @@ const UserType = new GraphQLObjectType({
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
+  // fields: {
+  // 	user: {
+  // 		type: UserType,
+  // 		args: { id: { type: GraphQLString } },
+  // 		resolve(parentValue, args) {
+  // 			return axios.get(`http://localhost:3000/users/${args.id}`)
+  // 				.then(res => res.data);
+  // 		}	
+  //   }
+  // }
+  // --------------------------------------------------------
   fields: {
     user: {
       type: UserType,
@@ -64,9 +77,8 @@ const RootQuery = new GraphQLObjectType({
         age: { type: GraphQLInt }
       },
       resolve(parentValue, args) {
-        return _.find(users, { id: args.id })
-        // return _.find(users, { age: args.age })
-
+        return axios.get(`http://localhost:3000/users/${args.id}`)
+          .then(resp => resp.data)
       }
     }
   }
