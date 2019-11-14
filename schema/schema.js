@@ -7,17 +7,9 @@ const {
   GraphQLString,
   GraphQLInt,
   GraphQLSchema,
-  // GraphQLList,
+  GraphQLList,
   // GraphQLNonNull
 } = graphql;
-// --------------------------Hard core data--------------------------------------------
-// const users = [
-//   { id: '23', firstName: 'Rusya', age: 31 },
-//   { id: '11', firstName: 'Oleg', age: 43 },
-//   { id: '2', firstName: 'Tom', age: 65 }
-// ]
-// ---------------------------------------------------------------------
-
 
 // const CompanyType = new GraphQLObjectType({
 //   name: 'Company',
@@ -34,51 +26,73 @@ const {
 //     }
 //   })
 // });
+const CompanyType = new GraphQLObjectType({
+  name: 'Company',
+  fields:()=> ({
+    id: { type: GraphQLString },
+    name: { type: GraphQLString },
+    description: { type: GraphQLString },
+    users: {
+      type: new GraphQLList(UserType),
+      resolve(parentValue, args) {
+        return axios.get(`http://localhost:3000/companies/${parentValue.id}/users`)
+          .then(res => res.data)
+      }
+    }
+  })
+})
 
 const UserType = new GraphQLObjectType({
   name: 'User',
-  fields: {
+  fields:()=> ({
     id: { type: GraphQLString },
     firstName: { type: GraphQLString },
     age: { type: GraphQLInt },
-  }
-  // fields: () => ({
-  //   id: { type: GraphQLString },
-  //   firstName: { type: GraphQLString },
-  //   age: { type: GraphQLInt },
-  //   company: {
-  //     type: CompanyType,
-  //     resolve(parentValue, args) {
-  //       return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`)
-  //         .then(res => res.data);
-  //     }
-  //   }
-  // })
+    // companyId:{type:GraphQLString}
+    company: {
+      type: CompanyType,
+      resolve(parentValue, args) {
+        // console.log(parentValue.id, args)
+        return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`)
+          .then(res => res.data)
+      }
+    }
+  })
 });
+
+// fields: () => ({
+//   id: { type: GraphQLString },
+//   firstName: { type: GraphQLString },
+//   age: { type: GraphQLInt },
+//   company: {
+//     type: CompanyType,
+//     resolve(parentValue, args) {
+//       return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`)
+//         .then(res => res.data);
+//     }
+//   }
+// })
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
-  // fields: {
-  // 	user: {
-  // 		type: UserType,
-  // 		args: { id: { type: GraphQLString } },
-  // 		resolve(parentValue, args) {
-  // 			return axios.get(`http://localhost:3000/users/${args.id}`)
-  // 				.then(res => res.data);
-  // 		}	
-  //   }
-  // }
-  // --------------------------------------------------------
   fields: {
     user: {
       type: UserType,
       args: {
         id: { type: GraphQLString },
-        age: { type: GraphQLInt }
+        // age: { type: GraphQLInt }
       },
       resolve(parentValue, args) {
         return axios.get(`http://localhost:3000/users/${args.id}`)
           .then(resp => resp.data)
+      }
+    },
+    company: {
+      type: CompanyType,
+      args: { id: { type: GraphQLString } },
+      resolve(parentValue, args) {
+        return axios.get(`http://localhost:3000/companies/${args.id}`)
+          .then(resp => resp.data);
       }
     }
   }
